@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star War System</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        /* 전체 화면 설정을 위한 기본 스타일 추가 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #message {
+            position: absolute;
+            top: 50px;
+            left: 50%; /* 중앙 정렬 */
+            transform: translateX(-50%); /* 정확한 중앙 위치 */
+            padding: 10px 35px;
+            background-color: #f8f9fa; /* 밝은 배경색 */
+            border: 1px solid #ccc; /* 경계선 */
+            border-radius: 10px; /* 둥근 모서리 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 그림자 효과 */
+            color: #333; /* 텍스트 색상 변경 */
+            font-size: 35px; /* 텍스트 크기 조정 */
+            display: none; /* 초기에는 숨김 */
+            z-index: 100; /* 다른 요소 위에 표시 */
+        }
+        #next-button {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 60px;
+            padding: 37px 75px;
+            background-color: #e4ede4;
+            color: #333;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            z-index: 100;
+            display: none; /* 초기에는 버튼을 숨김 */
+        }
+        
+        #next-button:enabled {
+            background-color: #4CAF50;
+            color: white;
+            display: block; /* 활성화될 때 버튼을 보이게 함 */
+        }
+        #image-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #current-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 이미지가 컨테이너를 꽉 채우도록 설정 */
+        }
+
+        #star-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* 클릭 방지 */
+        }
+
+        .star {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: yellow;
+            border-radius: 80%;
+            cursor: pointer;
+            pointer-events: auto;
+            animation: spin 10s linear infinite;
+            z-index: inherit;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .mis-star {
+            background-color: rgb(175, 226, 45);
+            box-shadow: 0 0 5px rgba(167, 219, 12, 0.8);
+        }
+
+        #text-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 30px 60px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            font-size: 72px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #ff0;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @keyframes moveParticle {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 80%;
+            background: transparent;
+            border: 15px solid rgba(221, 209, 33, 0.8);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: ripple 2s infinite;
+            z-index: 50;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .star-orbit {
+            position: absolute;
+            border: 2px dashed rgba(236, 211, 25, 0.3);
+            border-radius: 50%;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+        }
+
+        #spaceship {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            left: 1%;
+            top: 1%;
+            transition: all 1s ease-in-out;
+            z-index: 20;
+        }
+
+        #delivery-box {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #ff6b6b;
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            display: none;
+            cursor: pointer;
+            z-index: 30;
+            transition: all 0.3s ease;
+        }
+
+        #delivery-box:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    
+   
+    <div id="image-container">
+        <img id="current-image" src="" alt="Star Image">
+        <img id="spaceship" src="assets/images/spaceship.png" alt="Spaceship">
+        <div id="delivery-box"></div>
+        <div id="message" style="display: none;">Next Button Click!</div>
+        <div id="star-container"></div>
+        <div id="text-display"></div>
+        <div id="particle-container"></div>
+    </div>
+    <button id="next-button" disabled>Next</button>
+    
+    <script src="script1.js"></script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star War System</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        /* 전체 화면 설정을 위한 기본 스타일 추가 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #message {
+            position: absolute;
+            top: 50px;
+            left: 50%; /* 중앙 정렬 */
+            transform: translateX(-50%); /* 정확한 중앙 위치 */
+            padding: 10px 35px;
+            background-color: #f8f9fa; /* 밝은 배경색 */
+            border: 1px solid #ccc; /* 경계선 */
+            border-radius: 10px; /* 둥근 모서리 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 그림자 효과 */
+            color: #333; /* 텍스트 색상 변경 */
+            font-size: 35px; /* 텍스트 크기 조정 */
+            display: none; /* 초기에는 숨김 */
+            z-index: 100; /* 다른 요소 위에 표시 */
+        }
+        #next-button {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 60px;
+            padding: 37px 75px;
+            background-color: #e4ede4;
+            color: #333;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            z-index: 100;
+            display: none; /* 초기에는 버튼을 숨김 */
+        }
+        
+        #next-button:enabled {
+            background-color: #4CAF50;
+            color: white;
+            display: block; /* 활성화될 때 버튼을 보이게 함 */
+        }
+        #image-container {
+            position: relative;
+            width: var(--container-size, 1200px);  /* 기본값 1200px */
+            height: var(--container-size, 1200px); /* 기본값 1200px */
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        #current-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #star-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;            
+            pointer-events: none; /* 클릭 방지 */
+        }
+
+        .star {
+            position: absolute;
+            width: 40px;  /* 30px에서 60px로 증가 */
+            height: 40px; /* 30px에서 60px로 증가 */
+            background-color: yellow;
+            border-radius: 80%;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: inherit;
+            transform-origin: center;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.8); /* 빛나는 효과 추가 */
+        }
+
+        /* S1004 별 스타일 추가 */
+        .star.s1004 {
+            background-color: #2200ff; /* 오렌지 색상 */
+            box-shadow: 0 0 40px rgba(9, 1, 21, 0.8); /* 오렌지 빛나는 효과 */
+        }
+
+        /* 첫 번째 물결 */
+        .star::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 80%;
+            background: transparent;
+            border: 30px solid rgba(221, 209, 33, 0.8);
+            transform: translate(-50%, -50%);
+            animation: starRipple 2s infinite;
+            animation-delay: 0s;
+            pointer-events: none;
+        }
+
+        /* 두 번째 물결 */
+        .star::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 80%;
+            background: transparent;
+            border: 30px solid rgba(221, 209, 33, 0.8);
+            transform: translate(-50%, -50%);
+            animation: starRipple 2s infinite;
+            animation-delay: 0.4s;
+            pointer-events: none;
+        }
+
+        /* 추가 물결을 위한 가상 요소들 */
+        .star-ripple-3,
+        .star-ripple-4,
+        .star-ripple-5 {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 80%;
+            background: transparent;
+            border: 30px solid rgba(221, 209, 33, 0.8);
+            transform: translate(-50%, -50%);
+            animation: ripple 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes starRipple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .mis-star {
+            background-color: rgb(175, 226, 45);
+            box-shadow: 0 0 5px rgba(167, 219, 12, 0.8);
+        }
+
+        #text-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 30px 60px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            font-size: 72px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @keyframes moveParticle {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(50px, -50px);
+                opacity: 0;
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 80%;
+            background: transparent;
+            border: 15px solid rgba(221, 209, 33, 0.8);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: ripple 2s infinite;
+            z-index: 50;
+        }
+
+        @keyframes ripple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .star-orbit {
+            position: absolute;
+            border: 2px dashed rgba(236, 211, 25, 0.3);
+            border-radius: 50%;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+        }
+
+        #spaceship {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            left: 1%;
+            top: 1%;
+            transition: all 1s ease-in-out;
+            z-index: 20;
+        }
+
+        /* 다양한 화면 크기에 대한 대응 */
+        @media screen and (max-width: 300px) {
+            :root { --container-size: 300px; }
+        }
+        @media screen and (min-width: 301px) and (max-width: 500px) {
+            :root { --container-size: 500px; }
+        }
+        @media screen and (min-width: 501px) and (max-width: 800px) {
+            :root { --container-size: 800px; }
+        }
+        @media screen and (min-width: 801px) and (max-width: 1200px) {
+            :root { --container-size: 1200px; }
+        }
+        @media screen and (min-width: 1201px) and (max-width: 1500px) {
+            :root { --container-size: 1500px; }
+        }
+        @media screen and (min-width: 1501px) and (max-width: 2000px) {
+            :root { --container-size: 2000px; }
+        }
+        @media screen and (min-width: 2001px) and (max-width: 2500px) {
+            :root { --container-size: 2500px; }
+        }
+        @media screen and (min-width: 2501px) {
+            :root { --container-size: 3000px; }
+        }
+
+        /* 화면에 맞게 스케일 조정 */
+        @media screen {
+            #image-container {
+                transform: scale(var(--scale));
+                transform-origin: top center;
+            }
+        }
+
+        @keyframes clockwise {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 행성 스타일 */
+        .planet {
+            position: absolute;
+            width: 20px;  /* 20px에서 40px로 증가 */
+            height: 20px; /* 20px에서 40px로 증가 */
+            background-color: #3498db;
+            border-radius: 50%;
+            transform-origin: center;
+            z-index: 5;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* 빛나는 효과 추가 */
+        }
+
+        /* 궤도 스타일 */
+        .orbit {
+            position: absolute;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 20%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* 각 행성별 색상 및 크기 차이 */
+        .planet-1 { 
+            background-color: #753ce7;
+            width: 90px;   /* 첫 번째 행성 크기 */
+            height: 91px;
+        }
+        .planet-2 { 
+            background-color: #df13af;
+            width: 45px;   /* 두 번째 행성 크기 */
+            height: 45px;
+        }
+        .planet-3 { 
+            background-color: #b65984;
+            width: 15px;   /* 세 번째 행성 크기 */
+            height: 15px;
+        }
+        .planet-4 { 
+            background-color: #f10fcf;
+            width: 30px;   /* 네 번째 행성 크기 */
+            height: 30px;
+        }
+
+        /* 택배 상자 스타일 추가 */
+         /* 택배 상자 스타일 추가 */
+         .delivery-box {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            z-index: 25;
+            display: none; /* 초기에는 숨김 */
+            cursor: pointer; /* 클릭 가능하도록 설정 */
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="image-container">
+        <img id="current-image" src="" alt="Star Image">
+        <img id="spaceship" src="assets/images/spaceship.png" alt="Spaceship">
+        <img id="delivery-box" class="delivery-box" src="assets/images/delivery-box.png" alt="Delivery Box">
+        <div id="message" style="display: none;">Next Button Click!</div>
+        <div id="star-container"></div>
+        <div id="text-display"></div>
+        <div id="particle-container"></div>
+    </div>
+    <button id="next-button" disabled>Next</button>
+    
+    <script src="script3.js"></script>
+</body>
+</html>
